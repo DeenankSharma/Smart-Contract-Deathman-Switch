@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+contract deathswitch{
+    address public owner;
+    uint public lastaliveblock;
+    address public presetaddress;
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the owner");
+        _;
+    }
+    constructor(address _presetaddress) onlyOwner{
+        owner = msg.sender;
+        presetaddress = _presetaddress;
+        lastaliveblock = block.number;
+    }
+    function stillAlive() external  {
+        lastaliveblock = block.number;
+    }
+    function send()  external onlyOwner{
+        require(block.number - lastaliveblock>10,"owner is inactive");
+        uint balance = address(this).balance;
+        (bool success,)=presetaddress.call{value:balance}("");
+        require(success, "Transfer failed");
+    }
+    receive() external payable {}
+}
