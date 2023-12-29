@@ -13,12 +13,13 @@ contract deathswitch{
         presetaddress = _presetaddress;
         lastaliveblock = block.number;
     }
-    function stillAlive() external  {
+    function stillAlive() external onlyOwner {
         lastaliveblock = block.number;
     }
-    function send()  external onlyOwner{
+    function send()  external {
         require(block.number - lastaliveblock>10,"owner is inactive");
         uint balance = address(this).balance;
+        payable(presetaddress).transfer(balance);
         (bool success,)=presetaddress.call{value:balance}("");
         require(success, "Transfer failed");
     }
